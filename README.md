@@ -1,2 +1,2 @@
 # dragon-curve
-Dragon Curve Renderer in Elm
+Dragon Curve Renderer in Elm.
