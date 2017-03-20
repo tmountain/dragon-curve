@@ -60,28 +60,34 @@ invert direction =
             Left
 
 
-move : Direction -> Int -> Point -> Point
-move direction distance point =
-    case direction of
-        Up ->
-            { point | y = point.y - distance }
+step : Int
+step =
+    5
 
-        Right ->
-            { point | x = point.x + distance }
 
-        Down ->
-            { point | y = point.y + distance }
+move : Direction -> Line -> Line
+move direction ( l1, l2 ) =
+    let
+        { x, y } =
+            l2
+    in
+        case direction of
+            Up ->
+                ( Point x y, Point x (y - step) )
 
-        Left ->
-            { point | x = point.x - distance }
+            Down ->
+                ( Point x y, Point x (y + step) )
+
+            Left ->
+                ( Point x y, Point (x - step) y )
+
+            Right ->
+                ( Point x y, Point (x + step) y )
 
 
 lineToSvg : Line -> Svg msg
-lineToSvg points =
+lineToSvg ( p1, p2 ) =
     let
-        ( p1, p2 ) =
-            points
-
         px1 =
             p1.x
 
@@ -97,18 +103,9 @@ lineToSvg points =
         line [ x1 (toString px1), y1 (toString py1), x2 (toString px2), y2 (toString py2), stroke "#023963" ] []
 
 
-directionsToPoints : Point -> List Direction -> List Line -> List Line
-directionsToPoints point directions newDirections =
-    case directions of
-        [] ->
-            List.reverse newDirections
-
-        dir :: dirRest ->
-            let
-                transPoint =
-                    move dir 5 point
-            in
-                directionsToPoints transPoint dirRest (( point, transPoint ) :: newDirections)
+directionsToLines : Point -> List Direction -> List Line
+directionsToLines point directions =
+    List.scanl move ( point, point ) directions
 
 
 generate : Int -> Int -> List Direction -> List Direction
@@ -171,18 +168,51 @@ iterButton =
         ]
 
 
+genLines : Int -> List Line
+genLines iters =
+    directionsToLines (Point 0 0) (generate 0 iters [ Up, Right ])
+
+
+scaler : Int -> String
+scaler iters =
+    let
+        base =
+            iters
+                |> toFloat
+                |> \y ->
+                    y
+                        / 5
+                        |> floor
+
+        scalingFactor =
+            clamp 1 base base
+
+        origin =
+            -50 * iters * 2
+
+        -- -50 * scalingFactor
+        units =
+            -origin * 2
+    in
+        String.join " " <| List.map toString [ origin, origin, units, units ]
+
+
 view model =
-    div [ aligner ]
-        [ div [ alignerItem ]
-            [ div [ iterButton, onClick Increment ] [ Html.text "+" ]
-            , div [ iterButton, onClick Decrement ] [ Html.text "-" ]
+    let
+        lines =
+            genLines model
+    in
+        div [ aligner ]
+            [ div [ alignerItem ]
+                [ div [ iterButton, onClick Increment ] [ Html.text "+" ]
+                , div [ iterButton, onClick Decrement ] [ Html.text "-" ]
+                ]
+            , div [ alignerItem, box ]
+                [ Html.text <| scaler model
+                , Html.text <| "iter: " ++ toString model ++ " lines: " ++ (toString <| List.length <| lines)
+                , svg [ viewBox (scaler model) ] <| List.map lineToSvg <| lines
+                ]
             ]
-        , div [ alignerItem, box ]
-            [ svg [ viewBox "-300 -300 600 600" ] <|
-                List.map lineToSvg <|
-                    directionsToPoints (Point 0 0) (generate 0 model [ Up, Right ]) []
-            ]
-        ]
 
 
 type Msg
