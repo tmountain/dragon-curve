@@ -190,7 +190,6 @@ scaler iters =
         origin =
             -50 * iters * 2
 
-        -- -50 * scalingFactor
         units =
             -origin * 2
     in
@@ -208,8 +207,8 @@ view model =
                 , div [ iterButton, onClick Decrement ] [ Html.text "-" ]
                 ]
             , div [ alignerItem, box ]
-                [ Html.text <| scaler model
-                , Html.text <| "iter: " ++ toString model ++ " lines: " ++ (toString <| List.length <| lines)
+                [ Html.text <| "[ " ++ scaler model ++ " ]"
+                , Html.text <| "[ iter: " ++ toString model ++ " lines: " ++ (toString <| List.length <| lines) ++ " ]"
                 , svg [ viewBox (scaler model) ] <| List.map lineToSvg <| lines
                 ]
             ]

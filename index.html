@@ -8929,21 +8929,30 @@ var _user$project$Dragon$view = function (model) {
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html$text(
-							_user$project$Dragon$scaler(model)),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'[ ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_user$project$Dragon$scaler(model),
+									' ]'))),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html$text(
 								A2(
 									_elm_lang$core$Basics_ops['++'],
-									'iter: ',
+									'[ iter: ',
 									A2(
 										_elm_lang$core$Basics_ops['++'],
 										_elm_lang$core$Basics$toString(model),
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											' lines: ',
-											_elm_lang$core$Basics$toString(
-												_elm_lang$core$List$length(lines)))))),
+											A2(
+												_elm_lang$core$Basics_ops['++'],
+												_elm_lang$core$Basics$toString(
+													_elm_lang$core$List$length(lines)),
+												' ]'))))),
 							_1: {
 								ctor: '::',
 								_0: A2(
