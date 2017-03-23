@@ -1,6 +1,6 @@
 module Dragon exposing (..)
 
-import Html exposing (beginnerProgram, div, button, text)
+import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Svg exposing (..)
@@ -8,7 +8,15 @@ import Svg.Attributes exposing (..)
 
 
 main =
-    beginnerProgram { model = 1, view = view, update = update }
+    beginnerProgram { model = Model 1 0 0 0, view = view, update = update }
+
+
+
+-- MODEL
+
+
+type alias Model =
+    { iters : Int, zoom : Int, xoffset : Int, yoffset : Int }
 
 
 type Direction
@@ -26,6 +34,55 @@ type alias Point =
 
 type alias Line =
     ( Point, Point )
+
+
+
+-- UPDATE
+
+
+type Msg
+    = Forward
+    | Backward
+    | ZoomIn
+    | ZoomOut
+    | MoveUp
+    | MoveDown
+    | MoveLeft
+    | MoveRight
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        Forward ->
+            { model | iters = model.iters + 1 }
+
+        Backward ->
+            if model.iters - 1 > 0 then
+                { model | iters = model.iters - 1 }
+            else
+                { model | iters = 1 }
+
+        ZoomIn ->
+            { model | zoom = model.zoom + 1 }
+
+        ZoomOut ->
+            if model.zoom - 1 > -1 then
+                { model | zoom = model.zoom - 1 }
+            else
+                { model | zoom = 0 }
+
+        MoveLeft ->
+            { model | xoffset = model.xoffset - 5 }
+
+        MoveRight ->
+            { model | xoffset = model.xoffset + 5 }
+
+        MoveUp ->
+            { model | yoffset = model.yoffset - 5 }
+
+        MoveDown ->
+            { model | yoffset = model.yoffset + 5 }
 
 
 transition : Direction -> Direction
@@ -126,6 +183,46 @@ generate current max moves =
             generate nextIter max (nextMove ++ moves)
 
 
+genLines : Int -> List Line
+genLines iters =
+    directionsToLines (Point 0 0) (generate 0 iters [ Up, Right ])
+
+
+originOffset : Int -> Int -> Int
+originOffset origin offset =
+    origin
+        - (origin
+            |> toFloat
+            |> (\y -> y * ((toFloat offset) / 100.0))
+            |> floor
+          )
+
+
+scaler : Model -> String
+scaler { iters, zoom, xoffset, yoffset } =
+    let
+        scalingFactor =
+            clamp 1 (iters - zoom) (iters - zoom)
+
+        origin =
+            -100 * scalingFactor * 2
+
+        originX =
+            originOffset origin xoffset
+
+        originY =
+            originOffset origin yoffset
+
+        units =
+            -origin * 2
+    in
+        String.join " " <| List.map toString [ originX, originY, units, units ]
+
+
+
+-- VIEW
+
+
 aligner : Html.Attribute msg
 aligner =
     Html.Attributes.style
@@ -168,64 +265,26 @@ iterButton =
         ]
 
 
-genLines : Int -> List Line
-genLines iters =
-    directionsToLines (Point 0 0) (generate 0 iters [ Up, Right ])
-
-
-scaler : Int -> String
-scaler iters =
-    let
-        base =
-            iters
-                |> toFloat
-                |> \y ->
-                    y
-                        / 5
-                        |> floor
-
-        scalingFactor =
-            clamp 1 base base
-
-        origin =
-            -50 * iters * 2
-
-        units =
-            -origin * 2
-    in
-        String.join " " <| List.map toString [ origin, origin, units, units ]
-
-
+view : Model -> Html Msg
 view model =
     let
         lines =
-            genLines model
+            genLines model.iters
     in
         div [ aligner ]
             [ div [ alignerItem ]
-                [ div [ iterButton, onClick Increment ] [ Html.text "+" ]
-                , div [ iterButton, onClick Decrement ] [ Html.text "-" ]
+                [ div [ iterButton, onClick Forward ] [ Html.text "F" ]
+                , div [ iterButton, onClick Backward ] [ Html.text "B" ]
+                , div [ iterButton, onClick ZoomIn ] [ Html.text "+" ]
+                , div [ iterButton, onClick ZoomOut ] [ Html.text "-" ]
+                , div [ iterButton, onClick MoveUp ] [ Html.text "U" ]
+                , div [ iterButton, onClick MoveDown ] [ Html.text "D" ]
+                , div [ iterButton, onClick MoveLeft ] [ Html.text "L" ]
+                , div [ iterButton, onClick MoveRight ] [ Html.text "R" ]
                 ]
             , div [ alignerItem, box ]
                 [ Html.text <| "[ " ++ scaler model ++ " ]"
-                , Html.text <| "[ iter: " ++ toString model ++ " lines: " ++ (toString <| List.length <| lines) ++ " ]"
+                , Html.text <| "[ iter: " ++ toString model.iters ++ " lines: " ++ (toString <| List.length <| lines) ++ " ]"
                 , svg [ viewBox (scaler model) ] <| List.map lineToSvg <| lines
                 ]
             ]
-
-
-type Msg
-    = Increment
-    | Decrement
-
-
-update msg model =
-    case msg of
-        Increment ->
-            model + 1
-
-        Decrement ->
-            if model - 1 > 0 then
-                model - 1
-            else
-                1

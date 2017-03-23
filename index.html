@@ -8570,47 +8570,6 @@ var _elm_lang$svg$Svg_Attributes$additive = _elm_lang$virtual_dom$VirtualDom$att
 var _elm_lang$svg$Svg_Attributes$accumulate = _elm_lang$virtual_dom$VirtualDom$attribute('accumulate');
 var _elm_lang$svg$Svg_Attributes$accelerate = _elm_lang$virtual_dom$VirtualDom$attribute('accelerate');
 var _elm_lang$svg$Svg_Attributes$accentHeight = _elm_lang$virtual_dom$VirtualDom$attribute('accent-height');
-var _user$project$Dragon$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		if (_p0.ctor === 'Increment') {
-			return model + 1;
-		} else {
-			return (_elm_lang$core$Native_Utils.cmp(model - 1, 0) > 0) ? (model - 1) : 1;
-		}
-	});
-var _user$project$Dragon$scaler = function (iters) {
-	var origin = (-50 * iters) * 2;
-	var units = (0 - origin) * 2;
-	var base = function (y) {
-		return _elm_lang$core$Basics$floor(y / 5);
-	}(
-		_elm_lang$core$Basics$toFloat(iters));
-	var scalingFactor = A3(_elm_lang$core$Basics$clamp, 1, base, base);
-	return A2(
-		_elm_lang$core$String$join,
-		' ',
-		A2(
-			_elm_lang$core$List$map,
-			_elm_lang$core$Basics$toString,
-			{
-				ctor: '::',
-				_0: origin,
-				_1: {
-					ctor: '::',
-					_0: origin,
-					_1: {
-						ctor: '::',
-						_0: units,
-						_1: {
-							ctor: '::',
-							_0: units,
-							_1: {ctor: '[]'}
-						}
-					}
-				}
-			}));
-};
 var _user$project$Dragon$iterButton = _elm_lang$html$Html_Attributes$style(
 	{
 		ctor: '::',
@@ -8699,14 +8658,55 @@ var _user$project$Dragon$aligner = _elm_lang$html$Html_Attributes$style(
 			}
 		}
 	});
-var _user$project$Dragon$lineToSvg = function (_p1) {
-	var _p2 = _p1;
-	var _p4 = _p2._1;
-	var _p3 = _p2._0;
-	var py2 = _p4.y;
-	var px2 = _p4.x;
-	var py1 = _p3.y;
-	var px1 = _p3.x;
+var _user$project$Dragon$originOffset = F2(
+	function (origin, offset) {
+		return origin - _elm_lang$core$Basics$floor(
+			function (y) {
+				return y * (_elm_lang$core$Basics$toFloat(offset) / 100.0);
+			}(
+				_elm_lang$core$Basics$toFloat(origin)));
+	});
+var _user$project$Dragon$scaler = function (_p0) {
+	var _p1 = _p0;
+	var _p3 = _p1.zoom;
+	var _p2 = _p1.iters;
+	var scalingFactor = A3(_elm_lang$core$Basics$clamp, 1, _p2 - _p3, _p2 - _p3);
+	var origin = (-100 * scalingFactor) * 2;
+	var originX = A2(_user$project$Dragon$originOffset, origin, _p1.xoffset);
+	var originY = A2(_user$project$Dragon$originOffset, origin, _p1.yoffset);
+	var units = (0 - origin) * 2;
+	return A2(
+		_elm_lang$core$String$join,
+		' ',
+		A2(
+			_elm_lang$core$List$map,
+			_elm_lang$core$Basics$toString,
+			{
+				ctor: '::',
+				_0: originX,
+				_1: {
+					ctor: '::',
+					_0: originY,
+					_1: {
+						ctor: '::',
+						_0: units,
+						_1: {
+							ctor: '::',
+							_0: units,
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}));
+};
+var _user$project$Dragon$lineToSvg = function (_p4) {
+	var _p5 = _p4;
+	var _p7 = _p5._1;
+	var _p6 = _p5._0;
+	var py2 = _p7.y;
+	var px2 = _p7.x;
+	var py1 = _p6.y;
+	var px1 = _p6.x;
 	return A2(
 		_elm_lang$svg$Svg$line,
 		{
@@ -8737,18 +8737,64 @@ var _user$project$Dragon$lineToSvg = function (_p1) {
 		{ctor: '[]'});
 };
 var _user$project$Dragon$step = 5;
+var _user$project$Dragon$update = F2(
+	function (msg, model) {
+		var _p8 = msg;
+		switch (_p8.ctor) {
+			case 'Forward':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{iters: model.iters + 1});
+			case 'Backward':
+				return (_elm_lang$core$Native_Utils.cmp(model.iters - 1, 0) > 0) ? _elm_lang$core$Native_Utils.update(
+					model,
+					{iters: model.iters - 1}) : _elm_lang$core$Native_Utils.update(
+					model,
+					{iters: 1});
+			case 'ZoomIn':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{zoom: model.zoom + 1});
+			case 'ZoomOut':
+				return (_elm_lang$core$Native_Utils.cmp(model.zoom - 1, -1) > 0) ? _elm_lang$core$Native_Utils.update(
+					model,
+					{zoom: model.zoom - 1}) : _elm_lang$core$Native_Utils.update(
+					model,
+					{zoom: 0});
+			case 'MoveLeft':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{xoffset: model.xoffset - 5});
+			case 'MoveRight':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{xoffset: model.xoffset + 5});
+			case 'MoveUp':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{yoffset: model.yoffset - 5});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{yoffset: model.yoffset + 5});
+		}
+	});
+var _user$project$Dragon$Model = F4(
+	function (a, b, c, d) {
+		return {iters: a, zoom: b, xoffset: c, yoffset: d};
+	});
 var _user$project$Dragon$Point = F2(
 	function (a, b) {
 		return {x: a, y: b};
 	});
 var _user$project$Dragon$move = F2(
-	function (direction, _p5) {
-		var _p6 = _p5;
-		var _p7 = _p6._1;
-		var x = _p7.x;
-		var y = _p7.y;
-		var _p8 = direction;
-		switch (_p8.ctor) {
+	function (direction, _p9) {
+		var _p10 = _p9;
+		var _p11 = _p10._1;
+		var x = _p11.x;
+		var y = _p11.y;
+		var _p12 = direction;
+		switch (_p12.ctor) {
 			case 'Up':
 				return {
 					ctor: '_Tuple2',
@@ -8788,8 +8834,8 @@ var _user$project$Dragon$Down = {ctor: 'Down'};
 var _user$project$Dragon$Right = {ctor: 'Right'};
 var _user$project$Dragon$Up = {ctor: 'Up'};
 var _user$project$Dragon$transition = function (direction) {
-	var _p9 = direction;
-	switch (_p9.ctor) {
+	var _p13 = direction;
+	switch (_p13.ctor) {
 		case 'Up':
 			return _user$project$Dragon$Right;
 		case 'Right':
@@ -8801,8 +8847,8 @@ var _user$project$Dragon$transition = function (direction) {
 	}
 };
 var _user$project$Dragon$invert = function (direction) {
-	var _p10 = direction;
-	switch (_p10.ctor) {
+	var _p14 = direction;
+	switch (_p14.ctor) {
 		case 'Up':
 			return _user$project$Dragon$Down;
 		case 'Down':
@@ -8826,12 +8872,12 @@ var _user$project$Dragon$generate = F3(
 						_user$project$Dragon$invert,
 						A2(_elm_lang$core$List$map, _user$project$Dragon$transition, moves)));
 				var nextIter = current + 1;
-				var _v6 = nextIter,
-					_v7 = max,
-					_v8 = A2(_elm_lang$core$Basics_ops['++'], nextMove, moves);
-				current = _v6;
-				max = _v7;
-				moves = _v8;
+				var _v7 = nextIter,
+					_v8 = max,
+					_v9 = A2(_elm_lang$core$Basics_ops['++'], nextMove, moves);
+				current = _v7;
+				max = _v8;
+				moves = _v9;
 				continue generate;
 			}
 		}
@@ -8854,10 +8900,16 @@ var _user$project$Dragon$genLines = function (iters) {
 				}
 			}));
 };
-var _user$project$Dragon$Decrement = {ctor: 'Decrement'};
-var _user$project$Dragon$Increment = {ctor: 'Increment'};
+var _user$project$Dragon$MoveRight = {ctor: 'MoveRight'};
+var _user$project$Dragon$MoveLeft = {ctor: 'MoveLeft'};
+var _user$project$Dragon$MoveDown = {ctor: 'MoveDown'};
+var _user$project$Dragon$MoveUp = {ctor: 'MoveUp'};
+var _user$project$Dragon$ZoomOut = {ctor: 'ZoomOut'};
+var _user$project$Dragon$ZoomIn = {ctor: 'ZoomIn'};
+var _user$project$Dragon$Backward = {ctor: 'Backward'};
+var _user$project$Dragon$Forward = {ctor: 'Forward'};
 var _user$project$Dragon$view = function (model) {
-	var lines = _user$project$Dragon$genLines(model);
+	var lines = _user$project$Dragon$genLines(model.iters);
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -8883,13 +8935,13 @@ var _user$project$Dragon$view = function (model) {
 							_0: _user$project$Dragon$iterButton,
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$Increment),
+								_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$Forward),
 								_1: {ctor: '[]'}
 							}
 						},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text('+'),
+							_0: _elm_lang$html$Html$text('F'),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -8901,16 +8953,130 @@ var _user$project$Dragon$view = function (model) {
 								_0: _user$project$Dragon$iterButton,
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$Decrement),
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$Backward),
 									_1: {ctor: '[]'}
 								}
 							},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text('-'),
+								_0: _elm_lang$html$Html$text('B'),
 								_1: {ctor: '[]'}
 							}),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _user$project$Dragon$iterButton,
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$ZoomIn),
+										_1: {ctor: '[]'}
+									}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('+'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _user$project$Dragon$iterButton,
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$ZoomOut),
+											_1: {ctor: '[]'}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('-'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$div,
+										{
+											ctor: '::',
+											_0: _user$project$Dragon$iterButton,
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$MoveUp),
+												_1: {ctor: '[]'}
+											}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('U'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$div,
+											{
+												ctor: '::',
+												_0: _user$project$Dragon$iterButton,
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$MoveDown),
+													_1: {ctor: '[]'}
+												}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('D'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$div,
+												{
+													ctor: '::',
+													_0: _user$project$Dragon$iterButton,
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$MoveLeft),
+														_1: {ctor: '[]'}
+													}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('L'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$div,
+													{
+														ctor: '::',
+														_0: _user$project$Dragon$iterButton,
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html_Events$onClick(_user$project$Dragon$MoveRight),
+															_1: {ctor: '[]'}
+														}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('R'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
 					}
 				}),
 			_1: {
@@ -8944,7 +9110,7 @@ var _user$project$Dragon$view = function (model) {
 									'[ iter: ',
 									A2(
 										_elm_lang$core$Basics_ops['++'],
-										_elm_lang$core$Basics$toString(model),
+										_elm_lang$core$Basics$toString(model.iters),
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											' lines: ',
@@ -8973,7 +9139,11 @@ var _user$project$Dragon$view = function (model) {
 		});
 };
 var _user$project$Dragon$main = _elm_lang$html$Html$beginnerProgram(
-	{model: 1, view: _user$project$Dragon$view, update: _user$project$Dragon$update})();
+	{
+		model: A4(_user$project$Dragon$Model, 1, 0, 0, 0),
+		view: _user$project$Dragon$view,
+		update: _user$project$Dragon$update
+	})();
 var Elm = {};
 Elm['Dragon'] = Elm['Dragon'] || {};
 if (typeof _user$project$Dragon$main !== 'undefined') {
